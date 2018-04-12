@@ -37,7 +37,7 @@
     'mksnapshot_exec': '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)mksnapshot<(EXECUTABLE_SUFFIX)',
     'v8_os_page_size%': 0,
   },
-  'includes': ['../gypfiles/toolchain.gypi', '../gypfiles/features.gypi', 'inspector/inspector.gypi'],
+  'includes': ['../gypfiles/toolchain.gypi', '../gypfiles/features.gypi'],
   'targets': [
     {
       'target_name': 'v8',
@@ -526,8 +526,6 @@
       'dependencies': [
         'v8_libbase',
         'v8_libsampler',
-        'inspector/inspector.gyp:protocol_generated_sources#target',
-        'inspector/inspector.gyp:inspector_injected_script#target',
       ],
       'objs': ['foo.o'],
       'variables': {
@@ -539,7 +537,6 @@
         '<(SHARED_INTERMEDIATE_DIR)'
       ],
       'sources': [  ### gcmole(all) ###
-        '<@(inspector_all_sources)',
         '../include/v8-debug.h',
         '../include/v8-platform.h',
         '../include/v8-profiler.h',

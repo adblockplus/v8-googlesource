@@ -315,36 +315,42 @@
               'android_toolchain%': '<(android_ndk_root)/toolchains/x86-4.9/prebuilt/<(os_folder_name)-<(android_host_arch)/bin',
               'android_target_arch%': 'x86',
               'android_target_platform%': '16',
+              'abi_target': 'i686-linux-android',
               'arm_version%': 'default',
             }],
             ['target_arch == "x64"', {
               'android_toolchain%': '<(android_ndk_root)/toolchains/x86_64-4.9/prebuilt/<(os_folder_name)-<(android_host_arch)/bin',
               'android_target_arch%': 'x86_64',
               'android_target_platform%': '21',
+              'abi_target': 'x86_64-linux-android',
               'arm_version%': 'default',
             }],
             ['target_arch=="arm"', {
               'android_toolchain%': '<(android_ndk_root)/toolchains/arm-linux-androideabi-4.9/prebuilt/<(os_folder_name)-<(android_host_arch)/bin',
               'android_target_arch%': 'arm',
               'android_target_platform%': '16',
+              'abi_target': 'arm-linux-androideabi',
               'arm_version%': 7,
             }],
             ['target_arch == "arm64"', {
               'android_toolchain%': '<(android_ndk_root)/toolchains/aarch64-linux-android-4.9/prebuilt/<(os_folder_name)-<(android_host_arch)/bin',
               'android_target_arch%': 'arm64',
               'android_target_platform%': '21',
+              'abi_target': 'aarch64-linux-android',
               'arm_version%': 'default',
             }],
             ['target_arch == "mipsel"', {
               'android_toolchain%': '<(android_ndk_root)/toolchains/mipsel-linux-android-4.9/prebuilt/<(os_folder_name)-<(android_host_arch)/bin',
               'android_target_arch%': 'mips',
               'android_target_platform%': '16',
+              'abi_target': 'mips-linux-android',
               'arm_version%': 'default',
             }],
             ['target_arch == "mips64el"', {
               'android_toolchain%': '<(android_ndk_root)/toolchains/mips64el-linux-android-4.9/prebuilt/<(os_folder_name)-<(android_host_arch)/bin',
               'android_target_arch%': 'mips64',
               'android_target_platform%': '21',
+              'abi_target': 'mips64el-linux-android',
               'arm_version%': 'default',
             }],
           ],
@@ -374,14 +380,14 @@
                 'android_lib': '<(android_sysroot)/usr/lib',
               }],
             ],
-            'android_libcpp_include': '<(android_stl)/llvm-libc++/libcxx/include',
-            'android_libcpp_abi_include': '<(android_stl)/llvm-libc++abi/libcxxabi/include',
+            'android_libcpp_include': '<(android_stl)/llvm-libc++/include',
+            'android_libcpp_abi_include': '<(android_stl)/llvm-libc++abi/include',
             'android_libcpp_libs': '<(android_stl)/llvm-libc++/libs',
             'android_support_include': '<(android_toolchain)/sources/android/support/include',
             'android_sysroot': '<(android_sysroot)',
           }, {
             'variables': {
-              'android_sysroot': '<(android_ndk_root)/platforms/android-<(android_target_platform)/arch-<(android_target_arch)',
+              'android_sysroot': '<(android_ndk_root)/sysroot',
               'android_stl': '<(android_ndk_root)/sources/cxx-stl/',
             },
             'conditions': [
@@ -391,8 +397,10 @@
                 'android_lib': '<(android_sysroot)/usr/lib',
               }],
             ],
-            'android_libcpp_include': '<(android_stl)/llvm-libc++/libcxx/include',
-            'android_libcpp_abi_include': '<(android_stl)/llvm-libc++abi/libcxxabi/include',
+            'android_platform_sysroot': '<(android_ndk_root)/platforms/android-<(android_target_platform)/arch-<(android_target_arch)',
+            'android_libcpp_include': '<(android_stl)/llvm-libc++/include',
+            'android_libcpp_abi_include': '<(android_stl)/llvm-libc++abi/include',
+            'android_libcpp_abi_target_include': '<(android_sysroot)/usr/include/<(abi_target)',
             'android_libcpp_libs': '<(android_stl)/llvm-libc++/libs',
             'android_support_include': '<(android_ndk_root)/sources/android/support/include',
             'android_sysroot': '<(android_sysroot)',
@@ -1090,7 +1098,6 @@
           ['clang==1', {
             'xcode_settings': {
               'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
-              'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',  # -std=c++11
             },
             'conditions': [
               ['clang_xcode==0', {
@@ -1127,8 +1134,7 @@
           },  # Release
         },  # configurations
         'cflags': [ '-Wno-abi', '-Wall', '-W', '-Wno-unused-parameter'],
-        'cflags_cc': [ '-Wnon-virtual-dtor', '-fno-rtti', '-fno-exceptions',
-                       '-std=gnu++11' ],
+        'cflags_cc': [ '-Wnon-virtual-dtor', '-fno-rtti', '-fno-exceptions' ],
         'target_conditions': [
           ['_toolset=="target"', {
             'cflags!': [
@@ -1144,6 +1150,7 @@
               '--sysroot=<(android_sysroot)',
             ],
             'cflags_cc': [
+              '-isystem<(android_libcpp_abi_target_include)',
               '-isystem<(android_libcpp_include)',
               '-isystem<(android_libcpp_abi_include)',
               '-isystem<(android_support_include)',
@@ -1161,7 +1168,7 @@
             ],
             'ldflags': [
               '-Wl,--no-undefined',
-              '--sysroot=<(android_sysroot)',
+              '--sysroot=<(android_platform_sysroot)',
               '-nostdlib',
             ],
             'libraries!': [
